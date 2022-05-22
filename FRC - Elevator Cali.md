@@ -3,14 +3,17 @@ FRC - Elevator Cali
 
 
 Steps to configure Motion Magic
+
 ○ Download and configure sample code to fit our system
 CAN address
 Joystick
 disable all followers
 Selected Feedback Sensor
+
 ○ Check motor and sensor polarity
 ■ These must be in phase meaning positive motor command results in positive
 feedback
+
 zero all PIDF, Cruise Velocity, and acceleration
 special case setting for limit switches and referencing the encoder:
 zero the sensor: (init position to 0)
