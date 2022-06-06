@@ -59,6 +59,54 @@
  * - Pigeon IMU: 4.00
  * - CANifier: 4.00
  */
+ /*
+ Step A
+1. Set the _talon CAN address
+2. Set the port for the _joystick
+3. Commment out or set any followers that maybe in the System
+4. Config selected Feeback sensor
+5. Adjust sensor and motor phase
+6. Zero all PIDF values
+7. Zero Cruise Velocity and acceleration
+ */
+/*
+Step B (optinal)
+_talon.configClearPositionOnLmitR(true, Constants.kTimeoutMs);
+_talon.configFeedbackNotContinuous(true, Constants,kTimeoutMs);
+
+_talon.configPeakCurrentLimit(30);
+_talon.configPeakCurrentDuration(150);
+_talon.configContinuousCurrentLimit(20);
+
+_talon.setNeutralMode(NeutralMode.Brake);
+_talon.configIntegralZone(Constants.kSlotIdx, 30);
+*/
+/*
+Step C
+1. Add position data output/print out
+2. Add min and max position limits (estmation)
+*/
+/* Step D
+Deploy Code and Verify parameters (Free run, without Motion Magic Ctrl)
+1. Verify sensor and motor phase (Joystick/Motor; ouput/position-Tuner)
+2. Adjust min and max position limits
+3. Collect the max speed, put button to high, read the max Vel value on console
+4. Calculate the F-gain (excel form) kF
+5. Calculate the acceleration and vcruise velocity on excel form
+*/
+/*
+Step E
+With Motion Magic Ctrl
+1. Collect the Error, calculate kP on excel form
+2. calculate the kD on excel form
+*/
+/*
+Step F
+*/
+/* 
+Step G
+*/
+
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -74,18 +122,17 @@ import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import frc.robot.sim.PhysicsSim;
 
 public class Robot extends TimedRobot {
-	/*setpoints */
-	double m_targetMin = 10;
-	double m_targetMax = 700;
+	double m_targetMin = 10; //C.2 D.2
+	double m_targetMax = 700; //C.2 D.2
 
 	/* Hardware */
-	WPI_TalonSRX _talon = new WPI_TalonSRX(1);
-	Joystick _joy = new Joystick(0);
+	WPI_TalonSRX _talon = new WPI_TalonSRX(1); //A.1
+	Joystick _joy = new Joystick(0); //A.2
 
 	/* create some followers */
-	BaseMotorController _follower1 = new WPI_TalonSRX(0);
-	//BaseMotorController _follower2 = new WPI_VictorSPX(0);
-	//BaseMotorController _follower3 = new WPI_VictorSPX(1);
+	//A.3 BaseMotorController _follower1 = new WPI_TalonSRX(0);
+	//A.3 BaseMotorController _follower2 = new WPI_VictorSPX(0);
+	//A.3 BaseMotorController _follower3 = new WPI_VictorSPX(1);
 
 	/* Used to build string throughout loop */
 	StringBuilder _sb = new StringBuilder();
@@ -105,19 +152,19 @@ public class Robot extends TimedRobot {
 
 	public void robotInit() {
 		/* setup some followers */
-		_follower1.configFactoryDefault();
-		//_follower2.configFactoryDefault();
-		//_follower3.configFactoryDefault();
-		_follower1.follow(_talon);
-		//_follower2.follow(_talon);
-		//_follower3.follow(_talon);
+		//A.3 _follower1.configFactoryDefault();
+		//A.3 _follower2.configFactoryDefault();
+		//A.3 _follower3.configFactoryDefault();
+		//A.3 _follower1.follow(_talon);
+		//A.3 _follower2.follow(_talon);
+		//A.3 _follower3.follow(_talon);
 
 		/* Factory default hardware to prevent unexpected behavior */
 		_talon.configFactoryDefault();
 
 		/* Configure Sensor Source for Pirmary PID */
 		_talon.configSelectedFeedbackSensor(FeedbackDevice.Analog, Constants.kPIDLoopIdx,
-				Constants.kTimeoutMs);
+				Constants.kTimeoutMs); //A.4
 
 		/* set deadband to super small 0.001 (0.1 %).
 			The default deadband is 0.04 (4 %) */
@@ -128,8 +175,8 @@ public class Robot extends TimedRobot {
 		 * have green LEDs when driving Talon Forward / Requesting Postiive Output Phase
 		 * sensor to have positive increment when driving Talon Forward (Green LED)
 		 */
-		_talon.setSensorPhase(false);
-		_talon.setInverted(false);
+		_talon.setSensorPhase(true); //A.5 //D.1
+		_talon.setInverted(false); //A.5 //D.1
 
 		/* Set relevant frame periods to be at least as fast as periodic rate */
 		_talon.setStatusFramePeriod(StatusFrameEnhanced.Status_13_Base_PIDF0, 10, Constants.kTimeoutMs);
@@ -142,38 +189,40 @@ public class Robot extends TimedRobot {
 		_talon.configPeakOutputReverse(-1, Constants.kTimeoutMs);
 
 		/* Set Motion Magic gains in slot0 - see documentation */
+		// make sure the setpoints enabled before kI is enabled
 		_talon.selectProfileSlot(Constants.kSlotIdx, Constants.kPIDLoopIdx);
-		_talon.config_kF(Constants.kSlotIdx, 0.0, Constants.kTimeoutMs);
-		_talon.config_kP(Constants.kSlotIdx, 0.0, Constants.kTimeoutMs);
-		_talon.config_kI(Constants.kSlotIdx, 0.0, Constants.kTimeoutMs); // make sure the setpoints enabled before kI is enabled
-		_talon.config_kD(Constants.kSlotIdx, 0.0, Constants.kTimeoutMs);
+		_talon.config_kF(Constants.kSlotIdx, 0, Constants.kTimeoutMs); //A.6 D.4
+		_talon.config_kP(Constants.kSlotIdx, 0, Constants.kTimeoutMs); //A.6
+		_talon.config_kI(Constants.kSlotIdx, 0, Constants.kTimeoutMs); //A.6
+		_talon.config_kD(Constants.kSlotIdx, 0, Constants.kTimeoutMs); //A.6
 
 		/* Set acceleration and vcruise velocity - see documentation */
-		_talon.configMotionCruiseVelocity(0, Constants.kTimeoutMs);
-		_talon.configMotionAcceleration(0, Constants.kTimeoutMs);
+		_talon.configMotionCruiseVelocity(0, Constants.kTimeoutMs); //A.7 D.5
+		_talon.configMotionAcceleration(0, Constants.kTimeoutMs); //A.7 D.5
 
-		/* Zero the sensor once on robot boot up */
-		// comment it out if use the Analog Encoder
-		//_talon.setSelectedSensorPosition(0, Constants.kPIDLoopIdx, Constants.kTimeoutMs);
+		/* Zero the sensor once on robot boot up */ // set current position as the 0, we don't want it happen
+		//comment it out if use the Analog Encoder
+		//A.4 _talon.setSelectedSensorPosition(0, Constants.kPIDLoopIdx, Constants.kTimeoutMs);
 
+		//B.1 _talon.configClearPositionOnLimitR(true, Constants.kTimeoutMs);
 		// not roll over rom 1096 to 0 ...
-		_talon.configFeedbackNotContinuous(true, Constants.kTimeoutMs);
+		_talon.configFeedbackNotContinuous(true, Constants.kTimeoutMs); //B.1
 
-		/* configure Current Limits, Motor stall */
-		_talon.configPeakCurrentLimit(30);
-		_talon.configPeakCurrentDuration(150);
-		_talon.configContinuousCurrentLimit(20);
+		_talon.configPeakCurrentLimit(30); //B.1
+		_talon.configPeakCurrentDuration(150); //B.1
+		_talon.configContinuousCurrentLimit(20); //B.1
 
-		/* configure IntegralZone */
-		_talon.config_IntegralZone(Constants.kSlotIdx, 3);
+		//B.1 _talon.setNeutralMode(NeutralMode.Brake);
+		_talon.config_IntegralZone(Constants.kSlotIdx, 3); //B.1
 	}
 
+	/*
 	@Override
 	public void teleopInit()
 	{
 		// for MotionMagic reenable if the prevous position was in the middle
 		_talon.set(ControlMode.PercentOutput, 0);
-	}
+	}*/ //G
 
 	/**
 	 * This function is called periodically during operator control
@@ -195,15 +244,15 @@ public class Robot extends TimedRobot {
 		_sb.append(_talon.getSelectedSensorVelocity(Constants.kPIDLoopIdx));
 
 		// use it to get m_targetMin and m_targetMax postions from console
-		_sb.append("\t Position:");
-		_sb.append(_talon.getSelectedSensorPosition());
-		SmartDashboard.putNumber("Lift Position", _talon.getSelectedSensorPosition());
+		_sb.append("\tPosition:"); //C.1
+		_sb.append(_talon.getSelectedSensorPosition()); //C.1
+		SmartDashboard.putNumber("Lift Position", _talon.getSelectedSensorPosition()); //C.1
 
 		/* Arbitrary Feed Forward */
 		// how much power is needed to hold the motor
 		// use joystick to run slow speed to get the estmated value
-		double horizontalHouldOupt = .13;
-		
+		double horizontalHoldOutput = 0.1; //F
+		double arbFeedFwdTerm = getFeedForward(horizontalHoldOutput); // for arm //F
 
 		/**
 		 * Perform Motion Magic when Button 1 is held, else run Percent Output, which can
@@ -213,16 +262,10 @@ public class Robot extends TimedRobot {
 			/* Motion Magic */
 
 			/* 4096 ticks/rev * 10 Rotations in either direction */
-			// if: Free run by joystick
-			//double targetPos = rghtYstick * 4096 * 10.0;
-			// else: limited by setpoint
-			double targetPos = m_targetMin;
-
-			// if: no AFF
-			//_talon.set(ControlMode.MotionMagic, targetPos);
-			// else: add AFF
-			_talon.set(ControlMode.MotionMagic, targetPos, DemandType.ArbitraryFeedForward, horizontalHouldOupt);
-			// for arm? DemandType.ArbitraryFeedForward, arbFeedForward
+			//C.2 double targetPos = rghtYstick * 4096 * 10.0;
+			double targetPos = m_targetMin; //C.2
+			_talon.set(ControlMode.MotionMagic, targetPos); //F TBD
+			//DemandType.ArbitraryFeedForward, horizontalHouldOupt);
 
 			/* Append more signals to print when in speed mode */
 			_sb.append("\terr:");
@@ -230,10 +273,11 @@ public class Robot extends TimedRobot {
 			_sb.append("\ttrg:");
 			_sb.append(targetPos);
 		}
-		else if (_joy.getRawButton(4)) {
-			/* Motion Magic */
-			double targetPos = m_targetMax;
-			_talon.set(ControlMode.MotionMagic, targetPos/*, DemandType.ArbitraryFeedForward, horizontalHouldOupt*/);
+		else if(_joy.getRawButton(4)) //C.2
+		{
+			double targetPos = m_targetMax; //C.2
+			_talon.set(ControlMode.MotionMagic, targetPos); //F TBD
+			//DemandType.ArbitraryFeedForward, horizontalHouldOupt);
 
 			/* Append more signals to print when in speed mode */
 			_sb.append("\terr:");
@@ -241,12 +285,10 @@ public class Robot extends TimedRobot {
 			_sb.append("\ttrg:");
 			_sb.append(targetPos);
 		} 
-		else {
+		else { // free run
 			/* Percent Output */
 
-			// comment it out to stay MotionMagic, else uncomment it as open loop
-			// uncomment it before PID
-			//_talon.set(ControlMode.PercentOutput, leftYstick);
+			_talon.set(ControlMode.PercentOutput, leftYstick);
 		}
 		if (_joy.getRawButton(2)) {
 			/* Zero sensor positions */
@@ -277,5 +319,22 @@ public class Robot extends TimedRobot {
 
 		/* Instrumentation */
 		Instrum.Process(_talon, _sb);
+	}
+
+	private double getFeedForward(double horizontalHoldoutput)
+	{
+		double theta = Math.toRadians(90 - my_getCurrentArmAngle());
+		double gravityCompensation = Math.cos(theta);
+		double arb_feedForward = gravityCompensation * horizontalHoldoutput;
+		return arb_feedForward;
+	}
+
+	private double my_getCurrentArmAngle()
+	{
+		double m_fullRange = 150;
+		double m_offset = -2.3;
+		double m_sensorPos = _talon.getSelectedSensorPosition(0);
+		double m_angle = (m_sensorPos / 1024) * m_fullRange + m_offset;
+		return m_angle;
 	}
 }
