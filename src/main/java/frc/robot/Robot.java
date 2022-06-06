@@ -90,21 +90,24 @@ Step C
 Deploy Code and Verify parameters (Free run, without Motion Magic Ctrl)
 1. Verify sensor and motor phase (Joystick/Motor; ouput/position-Tuner)
 2. Adjust min and max position limits
-3. Collect the max speed, put button to high, read the max Vel value on console
-4. Calculate the F-gain (excel form) kF
+3. Collect the max speed, push button to high speed, read the max Vel value on console
+4. Calculate the F-gain / kF on excel form
 5. Calculate the acceleration and vcruise velocity on excel form
 */
 /*
 Step E
-With Motion Magic Ctrl
+With Motion Magic Ctrl (different ctrl buttons)
 1. Collect the Error, calculate kP on excel form
 2. calculate the kD on excel form
+3. kI
 */
 /*
 Step F
+TBD
 */
 /* 
 Step G
+TBD
 */
 
 package frc.robot;
